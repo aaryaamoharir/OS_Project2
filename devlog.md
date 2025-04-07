@@ -18,4 +18,6 @@ and manager need to be protected by semaphores.
 7. all the tellers and customers need unique ideas 
 
 
-I'll follow the instructions and start by simulating a simple transaction between them for right now
+Next time, I'll follow the instructions and start by simulating a simple transaction between them for right now. Overall, 
+this session was helpful in understanding the base requirements and by next section I hope to have a basic customer, teller 
+interaction completed. 
