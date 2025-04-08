@@ -21,3 +21,14 @@ and manager need to be protected by semaphores.
 Next time, I'll follow the instructions and start by simulating a simple transaction between them for right now. Overall, 
 this session was helpful in understanding the base requirements and by next section I hope to have a basic customer, teller 
 interaction completed. 
+
+## **04-08-2025 12:01PM Session**
+
+Today I want to implement the basic interaction between the teller and the customer
+
+
+## **04-08-2025 12:17PM Session**
+I have the basic interaction implemented using threads and semaphores but I need to talk 
+to make sure what I've done so far is correct. I simulated it using 50 customers, 3 
+tellers, and only 5 customers allowed in the bank at a time (similar to how they'll 
+only be allowed to access the safe 2 at a time)
