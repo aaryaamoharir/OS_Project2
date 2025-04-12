@@ -56,3 +56,7 @@ I'm working on getting the teller and customer to communicate with each other bu
 for the customer to process that the teller is ready and for it to be able to pick the customer 
 that it wants so I'm working on that right now. 
 
+## **6:41PM**
+Honestly, I'm super lost in my own code right now and I'm scared that I don't really know what's going on 
+so I'll copy paste what I have over somewhere and start it again 
+
