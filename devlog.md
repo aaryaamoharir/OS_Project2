@@ -32,3 +32,9 @@ I have the basic interaction implemented using threads and semaphores but I need
 to make sure what I've done so far is correct. I simulated it using 50 customers, 3 
 tellers, and only 5 customers allowed in the bank at a time (similar to how they'll 
 only be allowed to access the safe 2 at a time)
+
+## **04-12-2025 4:17PM Session**
+God bless the deadline has been extended so I'll try to get most of the work done today. What I've thought 
+about since the last session is how I want to set up the program. I'll probably do it all in 
+one class and since we don't need a logger this time around that simplifies it a little 
+bit.
