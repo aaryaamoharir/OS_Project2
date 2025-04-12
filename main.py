@@ -1,9 +1,14 @@
 import threading
 import time
 import random
+from queue import Queue
 
-# let's assume only 5 customers are allowed inside at one
-door_semaphore = threading.Semaphore(5)
+# set up all the variables
+door_semaphore = threading.Semaphore(2)
+manager_semaphore = threading.Semaphore(1)
+safe_semaphore = threading.Semaphore(2)
+customer_queue = Queue()
+queue_condition = threading.Condition()
 
 # classes for the tellers
 class Teller(threading.Thread):
@@ -12,7 +17,8 @@ class Teller(threading.Thread):
         self.id = id
 
     def run(self):
-        print(f"Teller {self.id} [Teller {self.id}]: Ready to greet customers")
+        print(f"Teller {self.id} []: ready to serve")
+        print(f"Teller {self.id} []: waiting for a customer")
         while True:
             time.sleep(0.1)  # this is the simulate the sleep time
             if customers_served >= 50:
@@ -27,10 +33,21 @@ class Customer(threading.Thread):
     def run(self):
         global customers_served
 
-        # this is them entering through the door
-        print(f"Customer {self.id} [Customer {self.id}]: Waiting to enter bank")
+        # choose a transaction to do 0: withdrawl and 1:deposit
+        transaction_id = random.randint(0, 1)
+        if( transaction_id == 0):
+            print(f"Customer {self.id} []: wants to perform this a withdrawal transaction")
+        if( transaction_id == 1):
+            print(f"Customer {self.id} []: wants to perform this a deposit transaction")
+
+        #goes to the bank
+        print(f"Customer {self.id} []: going to bank")
+
+        #only two customers at allowed through the doors are once and once they enter they stand in line
         door_semaphore.acquire()
-        print(f"Customer {self.id} [Customer {self.id}]: Entered bank")
+        print(f"Customer {self.id} []: entering bank")
+        door_semaphore.release()
+        print(f"Customer {self.id} []: getting in line")
 
         # they wave hi to the teller
         teller_id = random.randint(0, 2)  # Randomly select a teller
@@ -38,7 +55,7 @@ class Customer(threading.Thread):
 
         # and then they leave the bank
         print(f"Customer {self.id} [Customer {self.id}]: Leaving bank")
-        door_semaphore.release()
+
 
         # this increments the number of saved customers
         global customers_served_lock
