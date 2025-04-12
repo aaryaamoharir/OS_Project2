@@ -21,7 +21,7 @@ class Teller(threading.Thread):
         threading.Thread.__init__(self)
         self.id = id
         self.available = threading.Event()
-        self.available.set()  # Initially available
+        self.available.set()  # initially available
         self.current_customer = None
         self.customer_assigned = threading.Event()
         self.transaction_complete = threading.Event()
@@ -41,16 +41,25 @@ class Teller(threading.Thread):
                     # release the lock and wait
                     queue_condition.wait()
                 #once a customer is ready, take the customer
-                self.current_customer = customer_queue.get()
+                self.customer_assigned.wait()
+                # Get transaction type from customer
+                print(f"Teller {self.id} [{self.current_customer.id}]: serving a customer")
+                print(f"Teller {self.id} [{self.current_customer.id}]: asks for transaction")
+                self.transaction_type = self.current_customer.transaction_type
+                print(f"Teller {self.id} [{self.current_customer.id}]: handling {self.transaction_type} transaction")
+
+    def assign_customer(self, customer):
+        self.current_customer = customer
+        self.customer_assigned.set()  # assigns customer to teller thread
+        self.available.clear()  # marks teller as not available
 
 
 # this is the class for customer threads
 class Customer(threading.Thread):
-    def __init__(self, id):
+    def __init__(self, teller_id, manager_semaphore, safe_semaphore):
         threading.Thread.__init__(self)
         self.id = id
-        # choose a transaction to do 0: withdrawal and 1:deposit
-        self.transaction_type = random.randint(0,1)
+        self.transaction_type = random.choice(["deposit", "withdraw"])
         self.teller_ready = threading.Event()  # is teller ready for transaction
         self.transaction_received = threading.Event()  # did teller receive transaction
         self.transaction_done = threading.Event()  # is transaction done
@@ -78,7 +87,9 @@ class Customer(threading.Thread):
             for t in tellers:
                 #if the tellers are available then take the first one
                 if t.available.is_set() and t.available.wait(timeout=0):
+                    print(f"Customer {self.id} []: selecting a teller")
                     teller = t
+                    print(f"Customer {self.id} [Teller {teller.id}]: selects teller")
                     break
             else:
                 # wait in the teller queue
@@ -88,11 +99,20 @@ class Customer(threading.Thread):
                     #wait till assigned a teller
                     if self.assigned_teller:
                         teller = self.assigned_teller
+                        print(f"Customer {self.id} [Teller {teller.id}]: selects teller")
                         break
 
             # assigns itself to the teller
             teller.assign_customer(self)
-            print(f"Customer {self.id} [Teller {teller.id}]: Introduces self")
+            print(f"Customer {self.id} [Teller {teller.id}]: introduces itself")
+
+            self.teller_ready.wait()
+            self.transaction_done.wait()
+
+
+
+
+
         # this increments the number of saved customers at the end
         global customers_served_lock
         with customers_served_lock:
