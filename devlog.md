@@ -38,3 +38,8 @@ God bless the deadline has been extended so I'll try to get most of the work don
 about since the last session is how I want to set up the program. I'll probably do it all in 
 one class and since we don't need a logger this time around that simplifies it a little 
 bit.
+
+## **04-12-2025 4:35PM Session**
+Working on fixing the output for the tellers and creating proper semaphores + threads that I need 
+for the setup. 
+

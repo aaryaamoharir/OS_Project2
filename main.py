@@ -67,9 +67,10 @@ for customer in customers:
 print("All customers have waved hi and left.")
 
 # wait for the tellers to finish after since they'll be working after
-for teller in tellers:
+for i, teller in enumerate(tellers):
     teller.join()
+    print(f"Teller {i} []: leaving for the day")
 
 #basically program finished type beat
-print("Bank is now closed.")
+print("The bank closes for the day.")
 
