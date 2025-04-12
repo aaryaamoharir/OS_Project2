@@ -43,3 +43,6 @@ bit.
 Working on fixing the output for the tellers and creating proper semaphores + threads that I need 
 for the setup. 
 
+There seems to be a bug where only teller 0 is leaving for the day currently and I wonder if that's because 
+it's only going to teller 0 so I need to change that 
+

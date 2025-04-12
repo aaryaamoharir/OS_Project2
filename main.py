@@ -20,9 +20,16 @@ class Teller(threading.Thread):
         print(f"Teller {self.id} []: ready to serve")
         print(f"Teller {self.id} []: waiting for a customer")
         while True:
-            time.sleep(0.1)  # this is the simulate the sleep time
-            if customers_served >= 50:
-                break
+            #acquire the lock for queue_condition to make sure you're the only one accessing it
+            with queue_condition:
+                while customer_queue.empty():
+                    if customers_served >= 50:
+                        return
+                    # release the lock and wait
+                    queue_condition.wait()
+                #once a customer is ready, take the customer
+                self.current_customer = customer_queue.get()
+
 
 # this is the class for customer threads
 class Customer(threading.Thread):
@@ -85,8 +92,8 @@ print("All customers have waved hi and left.")
 
 # wait for the tellers to finish after since they'll be working after
 for i, teller in enumerate(tellers):
-    teller.join()
     print(f"Teller {i} []: leaving for the day")
+    teller.join()
 
 #basically program finished type beat
 print("The bank closes for the day.")
