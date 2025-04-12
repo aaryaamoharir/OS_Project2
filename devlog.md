@@ -51,3 +51,8 @@ it's only going to teller 0 so I need to change that
 I forgot that the customers need to wait for a bit before entering a bank and had to search up how time.sleep() works 
 Does it record in milliseconds or seconds (answer was ms). Now I'm working on the logic for customer going to teller. 
 
+## **6:06PM**
+I'm working on getting the teller and customer to communicate with each other but I needed some way 
+for the customer to process that the teller is ready and for it to be able to pick the customer 
+that it wants so I'm working on that right now. 
+
