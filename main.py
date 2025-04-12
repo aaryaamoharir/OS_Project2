@@ -36,19 +36,31 @@ class Customer(threading.Thread):
     def __init__(self, id):
         threading.Thread.__init__(self)
         self.id = id
-
+        # choose a transaction to do 0: withdrawal and 1:deposit
+        self.transaction_type = random.randint(0,1)
+        self.teller_ready = threading.Event()  # is teller ready for transaction
+        self.transaction_received = threading.Event()  # did teller receive transaction
+        self.transaction_done = threading.Event()  # is transaction done
     def run(self):
         global customers_served
+        #milliseconds to wait
+        delay = random.randint(0, 100) / 1000
 
-        # choose a transaction to do 0: withdrawl and 1:deposit
-        transaction_id = random.randint(0, 1)
-        if( transaction_id == 0):
-            print(f"Customer {self.id} []: wants to perform this a withdrawal transaction")
-        if( transaction_id == 1):
-            print(f"Customer {self.id} []: wants to perform this a deposit transaction")
-
-        #goes to the bank
+        # goes to the bank
         print(f"Customer {self.id} []: going to bank")
+        time.sleep(delay)
+
+        # Get in queue for the teller
+        with queue_condition:
+            customer_queue.put(self)
+            queue_condition.notify()
+
+        #if( transaction_id == 0):
+         #     print(f"Customer {self.id} []: wants to perform this a withdrawal transaction")
+        #if( transaction_id == 1):
+         #   print(f"Customer {self.id} []: wants to perform this a deposit transaction")
+
+
 
         #only two customers at allowed through the doors are once and once they enter they stand in line
         door_semaphore.acquire()

@@ -43,6 +43,11 @@ bit.
 Working on fixing the output for the tellers and creating proper semaphores + threads that I need 
 for the setup. 
 
+## **5:10PM**
 There seems to be a bug where only teller 0 is leaving for the day currently and I wonder if that's because 
 it's only going to teller 0 so I need to change that 
+
+## **5:27PM**
+I forgot that the customers need to wait for a bit before entering a bank and had to search up how time.sleep() works 
+Does it record in milliseconds or seconds (answer was ms). Now I'm working on the logic for customer going to teller. 
 
