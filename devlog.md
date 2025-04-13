@@ -73,3 +73,8 @@ I need to work on asking the customer for the type of transaction
 
 ## **11:42PM**
 Thought the issue popped up again for a while but it seems like it was just because I was waiting in customer haha. 
+
+## **04-13-2025 12:10AM Finished Session**
+I got a decent amount done today which is good. Essentially, most of the project other than some minor formatting tweaks that 
+might occur along the way are completed. Tomorrow I'll check my output once again with the instructions that are provided and 
+make sure that it works on the cs1 server as well. 
