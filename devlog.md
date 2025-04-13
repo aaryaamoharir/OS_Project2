@@ -118,3 +118,7 @@ been served so it waits in the queue for a new customer. Looking back, this issu
 but I changed the code so that once a teller starts to service the customer, it increments the global 
 variable right away.
 
+ ## **04-13-2025 5:38PM Ending Session**
+I tested the code on CS1 and it's working perfectly. I'll check the code one last time before submitting but everything seems 
+to be good. I ran into some threading issues which I fixed using a timeout command (would've saved me a lot of time if I'd just 
+done that sooner haha) and I also fixed some output issues it had. 
