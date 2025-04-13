@@ -3,7 +3,7 @@ import time
 import random
 from queue import Queue
 
-num_customers = 5
+num_customers = 50
 # set up all the variables
 door_semaphore = threading.Semaphore(2)
 manager_semaphore = threading.Semaphore(1)
@@ -34,28 +34,33 @@ class Teller(threading.Thread):
         global customers_served
 
         while customers_served <= num_customers:
-            self.clear_events()
+            should_exit = False
+
             print(f"Teller {self.id} []: ready to serve.")
             if self.id == 2:
                 bank_open.set()  # simulate that when the last teller is ready, bank opens
             print(f"Teller {self.id} []: waiting for a customer.")
-
-            if customers_served >= num_customers:
+            if (customers_served >= num_customers):
                 return
 
             with queue_condition:
-                while customer_queue.empty() and customers_served < num_customers:
-                    # wait for customer
-                    queue_condition.wait()
+                while customer_queue.empty():
+                    if (customers_served < num_customers):
+                        queue_condition.wait()
+                    else:
+                        return
                 #safety check incase another program just handled the last customer and there's no customers left
-                if customers_served >= num_customers:
-                    return
 
                 self.current_customer = customer_queue.get()
                 self.available = False
                 # Assign yourself to the customer
                 self.current_customer.assigned_teller = self
                 self.current_customer.assigned_event.set()
+
+                with customers_served_lock:
+                    customers_served += 1
+                    should_exit = (customers_served >= num_customers)
+
 
             self.is_acknowledged.wait()
             print(f"Teller {self.id} [Customer {self.current_customer.id}]: serving a customer ")
@@ -83,24 +88,16 @@ class Teller(threading.Thread):
                 print(f"Teller {self.id} [Customer {self.current_customer.id}]: leaving safe")
                 safe_semaphore.release()
                 print(f"Teller {self.id} [Customer {self.current_customer.id}]: finishes {self.transaction_type} transaction.")
-                self.current_customer.finished_event.set()
                 print(f"Teller {self.id} [Customer {self.current_customer.id}]: wait for customer to leave")
+                self.current_customer.finished_event.set()
                 self.customer_gone.wait()
-
-            should_exit = False
-            # Check completion AFTER transaction
-            with customers_served_lock:
-                customers_served += 1
-                should_exit = (customers_served >= num_customers)
-                if should_exit:
-                    with queue_condition:
-                        queue_condition.notify_all()
 
             self.available = True
             self.current_customer = None
+            self.clear_events()
 
             if should_exit:
-                return
+                continue
     def clear_events(self):
         self.customer_assigned.clear()
         self.transaction_complete.clear()
@@ -158,9 +155,10 @@ class Customer(threading.Thread):
         self.assigned_teller.customer_gone.set()
         print(f"Customer {self.id} []: goes to door")
         print(f"Customer {self.id} []: leaves the bank")
+        self.assigned_teller.customer_gone.clear()
 
         #clear all the events to be safe
-        self.clear_events()
+        #self.clear_events()
     def clear_events(self):
         self.assigned_teller.customer_gone.clear()
         self.finished_event.clear()

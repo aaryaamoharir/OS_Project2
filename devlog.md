@@ -110,3 +110,10 @@ Since I was handling all customer transaction inside the with queue_condition, e
 one go. Therefore, it wasn't properly simulating multiple tellers working at one time. Fixes for this included moving everything 
 out of the with statement while still making sure it was in the while loop since that shouldn't stop before 
 all the customers are handled. 
+
+Another issue caused the program to hang (essentially it was stuck in a deadlock) when the last customer 
+was served since it caused the program to just wait on the queue for a very long time. Essentially if teller 1 
+decided to help the last customer and it's in the middle of the process, teller 2 thinks only 49 customers have 
+been served so it waits in the queue for a new customer. Looking back, this issue could've been solved with a timeout
+but I changed the code so that once a teller starts to service the customer, it increments the global 
+variable right away.
