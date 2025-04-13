@@ -14,6 +14,7 @@ bank_open = threading.Event()
 global customers_served
 customers_served = 0
 customers_served_lock = threading.Lock()
+tellers_ready = 0;
 
 
 # Teller class to handle everything on that end
@@ -31,13 +32,14 @@ class Teller(threading.Thread):
         self.is_acknowledged = threading.Event()
 
     def run(self):
-        global customers_served
+        global customers_served, tellers_ready
 
         while customers_served <= num_customers:
             should_exit = False
 
             print(f"Teller {self.id} []: ready to serve.")
-            if self.id == 2:
+            tellers_ready = tellers_ready + 1
+            if tellers_ready == 3:
                 bank_open.set()  # simulate that when the last teller is ready, bank opens
             print(f"Teller {self.id} []: waiting for a customer.")
             if (customers_served >= num_customers):

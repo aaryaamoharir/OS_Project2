@@ -121,4 +121,5 @@ variable right away.
  ## **04-13-2025 5:38PM Ending Session**
 I tested the code on CS1 and it's working perfectly. I'll check the code one last time before submitting but everything seems 
 to be good. I ran into some threading issues which I fixed using a timeout command (would've saved me a lot of time if I'd just 
-done that sooner haha) and I also fixed some output issues it had. 
+done that sooner haha) and I also fixed some output issues it had. I added a teller variable to keep track of the amount of tellers 
+just incase teller 3 wasn't the last one to open 
