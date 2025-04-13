@@ -46,7 +46,8 @@ class Teller(threading.Thread):
             with queue_condition:
                 while customer_queue.empty():
                     if (customers_served < num_customers):
-                        queue_condition.wait()
+                        queue_condition.wait(timeout=0.02)
+                        continue
                     else:
                         return
                 #safety check incase another program just handled the last customer and there's no customers left
@@ -57,9 +58,7 @@ class Teller(threading.Thread):
                 self.current_customer.assigned_teller = self
                 self.current_customer.assigned_event.set()
 
-                with customers_served_lock:
-                    customers_served += 1
-                    should_exit = (customers_served >= num_customers)
+
 
 
             self.is_acknowledged.wait()
@@ -91,6 +90,10 @@ class Teller(threading.Thread):
                 print(f"Teller {self.id} [Customer {self.current_customer.id}]: wait for customer to leave")
                 self.current_customer.finished_event.set()
                 self.customer_gone.wait()
+
+            with customers_served_lock:
+                customers_served += 1
+                should_exit = (customers_served >= num_customers)
 
             self.available = True
             self.current_customer = None

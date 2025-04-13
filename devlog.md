@@ -117,3 +117,4 @@ decided to help the last customer and it's in the middle of the process, teller 
 been served so it waits in the queue for a new customer. Looking back, this issue could've been solved with a timeout
 but I changed the code so that once a teller starts to service the customer, it increments the global 
 variable right away.
+
