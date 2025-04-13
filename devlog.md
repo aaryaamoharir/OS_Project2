@@ -78,3 +78,9 @@ Thought the issue popped up again for a while but it seems like it was just beca
 I got a decent amount done today which is good. Essentially, most of the project other than some minor formatting tweaks that 
 might occur along the way are completed. Tomorrow I'll check my output once again with the instructions that are provided and 
 make sure that it works on the cs1 server as well. 
+
+## **04-13-2025 3:06PM Starting Session**
+Now that a rough draft of the project is done, I'll focus on fixing the output to match what was given with the 
+assignment and try to fix an error I was having with my teller. Essentially, when I do .join all of them end and 
+it prints out that the teller is leaving, but if I place that right before my return it's not working. So I'd like 
+to see if I can find the issue there. 
