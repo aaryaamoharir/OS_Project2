@@ -27,6 +27,7 @@ class Teller(threading.Thread):
         self.transaction_set = threading.Event()
         self.transaction_type = None
         self.customer_gone = threading.Event()
+        self.is_acknowledged = threading.Event()
 
     def run(self):
         global customers_served
@@ -49,6 +50,7 @@ class Teller(threading.Thread):
                 # Assign yourself to the customer
                 self.current_customer.assigned_teller = self
                 self.current_customer.assigned_event.set()
+                self.is_acknowledged.wait()
                 print(f"Teller {self.id} [Customer {self.current_customer.id}]: serving a customer ")
                 print(f"Teller {self.id} [Customer {self.current_customer.id}]: asks for transaction ")
                 self.current_customer.ask_transaction.set()
@@ -133,6 +135,7 @@ class Customer(threading.Thread):
         self.assigned_event.wait()
         print(f"Customer {self.id} [Teller {self.assigned_teller.id}]: selects teller")
         print(f"Customer {self.id} [Teller {self.assigned_teller.id}]: introduces itself")
+        self.assigned_teller.is_acknowledged.set()
 
         self.ask_transaction.wait()
         self.assigned_teller.transaction_type = self.transaction_type
