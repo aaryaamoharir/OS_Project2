@@ -29,20 +29,9 @@ class Teller(threading.Thread):
         print(f"Teller {self.id} []:  ready to serve.")
         if self.id == 2:
             bank_open.set()  # simulate that when the last teller is ready, bank opens
+        print(f"Teller {self.id} []:  waiting for customer.")
 
-        while True:
-            print(f"Teller {self.id} []:  waiting for customer.")
-            self.customer_assigned.wait()
-            self.customer_assigned.clear()
 
-            if customer_queue.empty():
-                break
-
-            print(f"Teller {self.id} is serving a customer...")
-            time.sleep(random.uniform(0.5, 1.0))  # Simulate transaction time
-            print(f"Teller {self.id} finished transaction.")
-
-            self.transaction_complete.set()
 
 
 class Customer(threading.Thread):
@@ -51,6 +40,7 @@ class Customer(threading.Thread):
         self.id = customer_id
         self.transaction_type = random.choice(["deposit", "withdraw"])
         self.assigned_teller = None
+        self.teller_ready = threading.Event()
 
     def run(self):
         # Wait for bank to open
@@ -67,15 +57,26 @@ class Customer(threading.Thread):
         door_semaphore.acquire()
         print(f"Customer {self.id} []: entering bank")
         door_semaphore.release()
-        print(f"Customer {self.id} []: getting in line")
 
-        #select a teller
+        # put yourself in a line and wait
+        with queue_condition:
+            customer_queue.put(self)
+            print(f"Customer {self.id} []: getting in line")
+            queue_condition.notify_all()
+
+        # wait for a teller to be assigned
+        self.teller_ready.wait()
+        print(f"Customer {self.id} [Teller {self.assigned_teller.id}]: introduces itself")
+
+
+
 
 
 #Main class to create the threads
 if __name__ == "__main__":
 
     #create 3 tellers
+    global tellers
     tellers = [Teller(i) for i in range(3)]
 
    # Start tellers
@@ -87,6 +88,7 @@ if __name__ == "__main__":
 
 
    # Create and start customers
+    global customers
     customers = [Customer(i) for i in range(50)]
 
     for customer in customers:
