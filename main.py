@@ -46,9 +46,12 @@ class Teller(threading.Thread):
                 # Assign yourself to the customer
                 self.current_customer.assigned_teller = self
                 self.current_customer.assigned_event.set()
-                print(f"Teller {self.id}: calling customer {self.current_customer.id}")
+                print(f"Teller {self.id} [Customer {self.current_customer.id}]: serving a customer ")
+                print(f"Teller {self.id} [Customer {self.current_customer.id}]: asks for transaction ")
+                print(f"Customer {self.current_customer.id} [Teller {self.id}]: asks for {self.current_customer.transaction_type} transaction")
 
             # Service the customer
+
             print(f"Teller {self.id} [Customer {self.current_customer.id}]: Hello!")
             time.sleep(random.uniform(0.50, 1.0))  # Transaction time
             print(f"Teller {self.id} [Customer {self.current_customer.id}]: Transaction complete")
@@ -104,6 +107,7 @@ class Customer(threading.Thread):
 
         # wait for a teller to be assigned
         self.assigned_event.wait()
+        print(f"Customer {self.id} [Teller {self.assigned_teller.id}]: selects teller")
         print(f"Customer {self.id} [Teller {self.assigned_teller.id}]: introduces itself")
 
 

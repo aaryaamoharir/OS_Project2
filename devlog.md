@@ -68,4 +68,5 @@ that right now.
 ## **11:18PM**
 YAY! I think I finally fixed the issue by adding in a return statement during the program that essentially checks 
 if the amount of customers served is above 50 in the middle and I made it say the teller is leaving after it does 
-the join to essentially close it off! I forgot to commit the process so you can only really see the end result though. 
+the join to essentially close it off! I forgot to commit the process so you can only really see the end result though. Now 
+I need to work on asking the customer for the type of transaction 
