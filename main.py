@@ -24,21 +24,23 @@ class Teller(threading.Thread):
         self.current_customer = None
         self.customer_assigned = threading.Event()
         self.transaction_complete = threading.Event()
+        self.transaction_set = threading.Event()
+        self.transaction_type = None
 
     def run(self):
         global customers_served
 
-        while customers_served < 50:
+        while customers_served < 5:
             print(f"Teller {self.id} []:  ready to serve.")
             if self.id == 2:
                 bank_open.set()  # simulate that when the last teller is ready, bank opens
             print(f"Teller {self.id} []:  waiting for customer.")
 
             with queue_condition:
-                while customer_queue.empty() and customers_served < 50:
+                while customer_queue.empty() and customers_served < 5:
                     #wait for customer
                     queue_condition.wait()
-                if customers_served >= 50:
+                if customers_served >= 5:
                     return
 
                 self.current_customer = customer_queue.get()
@@ -48,19 +50,46 @@ class Teller(threading.Thread):
                 self.current_customer.assigned_event.set()
                 print(f"Teller {self.id} [Customer {self.current_customer.id}]: serving a customer ")
                 print(f"Teller {self.id} [Customer {self.current_customer.id}]: asks for transaction ")
-                print(f"Customer {self.current_customer.id} [Teller {self.id}]: asks for {self.current_customer.transaction_type} transaction")
+                self.current_customer.ask_transaction.set()
+                self.transaction_set.wait()
+                print(f"Teller {self.id} [Customer {self.current_customer.id}]: handling {self.transaction_type} transaction ")
+
+                #for both transaction and withdrawl go to the safe but for withdrawl also go to the manager for permission first
+                if(self.transaction_type == "withdraw"):
+                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: going to manager ")
+                    manager_semaphore.acquire()
+                    #simulate the amount of time it takes for manager and teller to communicate
+                    sleep_duration = random.randint(5, 30)
+                    time.sleep(sleep_duration / 1000)
+                    manager_semaphore.release()
+                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: got manager's permission")
+                if(self.transaction_type is not None):
+                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: going to safe")
+                    safe_semaphore.acquire()
+                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: enter safe")
+                    sleep_duration = random.randint(10, 50)
+                    time.sleep(sleep_duration / 1000)
+                    safe_semaphore.release()
+
+
+
+
+
+
+
+
 
             # Service the customer
 
             print(f"Teller {self.id} [Customer {self.current_customer.id}]: Hello!")
-            time.sleep(random.uniform(0.50, 1.0))  # Transaction time
+            time.sleep(random.uniform(0.5, 1.0))  # Transaction time
             print(f"Teller {self.id} [Customer {self.current_customer.id}]: Transaction complete")
 
             should_exit = False
             # Check completion AFTER transaction
             with customers_served_lock:
                 customers_served += 1
-                should_exit = (customers_served >= 50)
+                should_exit = (customers_served >= 5)
                 if should_exit:
                     with queue_condition:
                         queue_condition.notify_all()
@@ -82,6 +111,8 @@ class Customer(threading.Thread):
         self.transaction_type = random.choice(["deposit", "withdraw"])
         self.assigned_teller = None
         self.assigned_event = threading.Event()
+        self.finished_event = threading.Event()
+        self.ask_transaction = threading.Event()
 
     def run(self):
         # Wait for bank to open
@@ -110,6 +141,14 @@ class Customer(threading.Thread):
         print(f"Customer {self.id} [Teller {self.assigned_teller.id}]: selects teller")
         print(f"Customer {self.id} [Teller {self.assigned_teller.id}]: introduces itself")
 
+        self.ask_transaction.wait()
+        self.assigned_teller.transaction_type = self.transaction_type
+        self.assigned_teller.transaction_set.set()
+        print(f"Customer {self.id} [Teller {self.assigned_teller.id}]: asks for {self.transaction_type} transaction")
+
+        #wait for transaction to be completed
+        #self.finished_event.wait()
+
 
 
 
@@ -131,7 +170,7 @@ if __name__ == "__main__":
 
    # Create and start customers
     global customers
-    customers = [Customer(i) for i in range(50)]
+    customers = [Customer(i) for i in range(5)]
 
     for customer in customers:
         customer.start()
@@ -139,18 +178,19 @@ if __name__ == "__main__":
     # Wait for all transactions to complete
     while True:
         with customers_served_lock:
-            if customers_served >= 50:
+            if customers_served >= 5:
                 break
         time.sleep(0.1)
 
-    # Wait for all customers to complete
-    for customer in customers:
-        customer.join()
 
    # wait for the tellers to finish after since they'll be working after
     for i, teller in enumerate(tellers):
         teller.join()
         print(f"Teller {i} []: leaving for the day")
+
+        # Wait for all customers to complete
+    for customer in customers:
+        customer.join()
 
 
     bank_open.clear()

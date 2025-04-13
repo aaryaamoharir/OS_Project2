@@ -70,3 +70,6 @@ YAY! I think I finally fixed the issue by adding in a return statement during th
 if the amount of customers served is above 50 in the middle and I made it say the teller is leaving after it does 
 the join to essentially close it off! I forgot to commit the process so you can only really see the end result though. Now 
 I need to work on asking the customer for the type of transaction 
+
+## **11:42PM**
+Thought the issue popped up again for a while but it seems like it was just because I was waiting in customer haha. 
