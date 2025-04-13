@@ -26,17 +26,20 @@ class Teller(threading.Thread):
         self.transaction_complete = threading.Event()
 
     def run(self):
-        print(f"Teller {self.id} []:  ready to serve.")
-        if self.id == 2:
-            bank_open.set()  # simulate that when the last teller is ready, bank opens
-        print(f"Teller {self.id} []:  waiting for customer.")
         global customers_served
 
         while customers_served < 50:
+            print(f"Teller {self.id} []:  ready to serve.")
+            if self.id == 2:
+                bank_open.set()  # simulate that when the last teller is ready, bank opens
+            print(f"Teller {self.id} []:  waiting for customer.")
+
             with queue_condition:
                 while customer_queue.empty() and customers_served < 50:
                     #wait for customer
                     queue_condition.wait()
+                if customers_served >= 50:
+                    return
 
                 self.current_customer = customer_queue.get()
                 self.available = False
@@ -47,7 +50,7 @@ class Teller(threading.Thread):
 
             # Service the customer
             print(f"Teller {self.id} [Customer {self.current_customer.id}]: Hello!")
-            time.sleep(random.uniform(0.5, 1.0))  # Transaction time
+            time.sleep(random.uniform(0.50, 1.0))  # Transaction time
             print(f"Teller {self.id} [Customer {self.current_customer.id}]: Transaction complete")
 
             should_exit = False
@@ -63,7 +66,6 @@ class Teller(threading.Thread):
             self.current_customer = None
 
             if should_exit:
-                print(f"Teller {self.id}: leaving for the day")
                 return
 
 
@@ -130,12 +132,22 @@ if __name__ == "__main__":
     for customer in customers:
         customer.start()
 
-   # Wait for all customers to complete
+    # Wait for all transactions to complete
+    while True:
+        with customers_served_lock:
+            if customers_served >= 50:
+                break
+        time.sleep(0.1)
+
+    # Wait for all customers to complete
     for customer in customers:
         customer.join()
+
    # wait for the tellers to finish after since they'll be working after
     for i, teller in enumerate(tellers):
         teller.join()
+        print(f"Teller {i} []: leaving for the day")
+
 
     bank_open.clear()
    #basically program finished type beat

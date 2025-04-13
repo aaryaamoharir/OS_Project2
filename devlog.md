@@ -60,3 +60,12 @@ that it wants so I'm working on that right now.
 Honestly, I'm super lost in my own code right now and I'm scared that I don't really know what's going on 
 so I'll copy paste what I have over somewhere and start it again 
 
+## **11:00PM**
+Took a break for a while but I ended up cleaning up most of the code and now I'm at a place where the customer 
+talks to the teller but the issue is, the program hangs after teller 1 leaves for the day so I'm working on fixing 
+that right now. 
+
+## **11:18PM**
+YAY! I think I finally fixed the issue by adding in a return statement during the program that essentially checks 
+if the amount of customers served is above 50 in the middle and I made it say the teller is leaving after it does 
+the join to essentially close it off! I forgot to commit the process so you can only really see the end result though. 
