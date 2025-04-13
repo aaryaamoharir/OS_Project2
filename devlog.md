@@ -24,7 +24,7 @@ interaction completed.
 
 ## **04-08-2025 12:01PM Session**
 
-Today I want to implement the basic interaction between the teller and the customer
+Today I want to implement the basic interaction between the teller and the customer.
 
 
 ## **04-08-2025 12:17PM Session**
@@ -41,7 +41,9 @@ bit.
 
 ## **04-12-2025 4:35PM Session**
 Working on fixing the output for the tellers and creating proper semaphores + threads that I need 
-for the setup. 
+for the setup. I also decided to change my approach to use two classes (a Teller and a Semaphore class). I also 
+realized that we can use threading.Event() to notify the other class when something has been done (such as a teller 
+asking for transaction).
 
 ## **5:10PM**
 There seems to be a bug where only teller 0 is leaving for the day currently and I wonder if that's because 
@@ -58,12 +60,16 @@ that it wants so I'm working on that right now.
 
 ## **6:41PM**
 Honestly, I'm super lost in my own code right now and I'm scared that I don't really know what's going on 
-so I'll copy paste what I have over somewhere and start it again 
+so I'll copy paste what I have over somewhere and start it again.
 
 ## **11:00PM**
 Took a break for a while but I ended up cleaning up most of the code and now I'm at a place where the customer 
 talks to the teller but the issue is, the program hangs after teller 1 leaves for the day so I'm working on fixing 
-that right now. 
+that right now. Starting over was definitely a smart move since it helped me clear up some bugs and better format my 
+code. Instead of pulling the type of transaction by accessing a variable in the customer class, it seems like the program
+wants the customer to tell the teller (aka set the teller's variable) instead of it just being pulled by the teller 
+which makes sense. Therefore, I had to create a new threading.Event() to inform the teller once a customer has set the 
+proper variable. 
 
 ## **11:18PM**
 YAY! I think I finally fixed the issue by adding in a return statement during the program that essentially checks 
@@ -84,3 +90,14 @@ Now that a rough draft of the project is done, I'll focus on fixing the output t
 assignment and try to fix an error I was having with my teller. Essentially, when I do .join all of them end and 
 it prints out that the teller is leaving, but if I place that right before my return it's not working. So I'd like 
 to see if I can find the issue there. 
+
+I found a few output errors. For example, I was never outputting asks manager for permission. I also noticed that I'm
+using a lot of state variables that I might not necessarily need if I just make one called get_reply. I might change that 
+if needed but the code seems to be working fine. One thing I forgot to write down yesterday was why I changed my 
+implementation for customers. Originally, I was thinking the customers would go to the teller first but that brought
+an interesting issue of when the customer would check if there was anyone in the queue. Therefore, by putting 
+all the customers in the line (as the program suggests) and having the teller check the line instead of ever being 
+assigned a customer by the customer class, it solves this issue. 
+
+I also feel like my devlog doesn't have the necessary details of the debugging I did along the way so I'm expanding on some 
+of those right now. 
