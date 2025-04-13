@@ -101,3 +101,7 @@ assigned a customer by the customer class, it solves this issue.
 
 I also feel like my devlog doesn't have the necessary details of the debugging I did along the way so I'm expanding on some 
 of those right now. 
+
+I noticed that in my output, the teller would actually be ready to serve before the customer left the teller after the 
+first customer and realized that it was because I was never resetting the threading.Event() conditions so I'll go in and 
+fix all of those as well. 

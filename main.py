@@ -33,7 +33,7 @@ class Teller(threading.Thread):
     def run(self):
         global customers_served
 
-        while customers_served < num_customers:
+        while customers_served <= num_customers:
             print(f"Teller {self.id} []: ready to serve.")
             if self.id == 2:
                 bank_open.set()  # simulate that when the last teller is ready, bank opens
@@ -94,7 +94,7 @@ class Teller(threading.Thread):
             self.current_customer = None
 
             if should_exit:
-                return
+                continue
 
 class Customer(threading.Thread):
     def __init__(self, customer_id):
@@ -146,6 +146,7 @@ class Customer(threading.Thread):
         self.assigned_teller.customer_gone.set()
         print(f"Customer {self.id} []: goes to door")
         print(f"Customer {self.id} []: leaves the bank")
+        self.assigned_teller.customer_gone.clear()
 
 
 # Main class to create the threads
