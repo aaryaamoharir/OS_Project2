@@ -23,10 +23,10 @@ class Teller(threading.Thread):
         self.id = teller_id
         self.available = True
         self.current_customer = None
+        self.transaction_type = None
         self.customer_assigned = threading.Event()
         self.transaction_complete = threading.Event()
         self.transaction_set = threading.Event()
-        self.transaction_type = None
         self.customer_gone = threading.Event()
         self.is_acknowledged = threading.Event()
 
@@ -34,15 +34,20 @@ class Teller(threading.Thread):
         global customers_served
 
         while customers_served <= num_customers:
+            self.clear_events()
             print(f"Teller {self.id} []: ready to serve.")
             if self.id == 2:
                 bank_open.set()  # simulate that when the last teller is ready, bank opens
-            print(f"Teller {self.id} []: waiting for customer.")
+            print(f"Teller {self.id} []: waiting for a customer.")
+
+            if customers_served >= num_customers:
+                return
 
             with queue_condition:
                 while customer_queue.empty() and customers_served < num_customers:
                     # wait for customer
                     queue_condition.wait()
+                #safety check incase another program just handled the last customer and there's no customers left
                 if customers_served >= num_customers:
                     return
 
@@ -51,35 +56,36 @@ class Teller(threading.Thread):
                 # Assign yourself to the customer
                 self.current_customer.assigned_teller = self
                 self.current_customer.assigned_event.set()
-                self.is_acknowledged.wait()
-                print(f"Teller {self.id} [Customer {self.current_customer.id}]: serving a customer ")
-                print(f"Teller {self.id} [Customer {self.current_customer.id}]: asks for transaction ")
-                self.current_customer.ask_transaction.set()
-                self.transaction_set.wait()
-                print(f"Teller {self.id} [Customer {self.current_customer.id}]: handling {self.transaction_type} transaction ")
 
-                # for both transaction and withdrawal go to the safe but for withdrawal also go to the manager for permission first
-                if self.transaction_type == "withdrawal":
-                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: going to the manager ")
-                    manager_semaphore.acquire()
-                    # simulate the amount of time it takes for manager and teller to communicate
-                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: getting manager's permission")
-                    sleep_duration = random.randint(5, 30)
-                    time.sleep(sleep_duration / 1000)
-                    manager_semaphore.release()
-                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: got manager's permission")
-                if self.transaction_type is not None:
-                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: going to safe")
-                    safe_semaphore.acquire()
-                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: enter safe")
-                    sleep_duration = random.randint(10, 50)
-                    time.sleep(sleep_duration / 1000)
-                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: leaving safe")
-                    safe_semaphore.release()
-                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: finishes {self.transaction_type} transaction.")
-                    self.current_customer.finished_event.set()
-                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: wait for customer to leave")
-                    self.customer_gone.wait()
+            self.is_acknowledged.wait()
+            print(f"Teller {self.id} [Customer {self.current_customer.id}]: serving a customer ")
+            print(f"Teller {self.id} [Customer {self.current_customer.id}]: asks for transaction ")
+            self.current_customer.ask_transaction.set()
+            self.transaction_set.wait()
+            print(f"Teller {self.id} [Customer {self.current_customer.id}]: handling {self.transaction_type} transaction ")
+
+            # for both transaction and withdrawal go to the safe but for withdrawal also go to the manager for permission first
+            if self.transaction_type == "withdrawal":
+                print(f"Teller {self.id} [Customer {self.current_customer.id}]: going to the manager ")
+                manager_semaphore.acquire()
+                # simulate the amount of time it takes for manager and teller to communicate
+                print(f"Teller {self.id} [Customer {self.current_customer.id}]: getting manager's permission")
+                sleep_duration = random.randint(5, 30)
+                time.sleep(sleep_duration / 1000)
+                manager_semaphore.release()
+                print(f"Teller {self.id} [Customer {self.current_customer.id}]: got manager's permission")
+            if self.transaction_type is not None:
+                print(f"Teller {self.id} [Customer {self.current_customer.id}]: going to safe")
+                safe_semaphore.acquire()
+                print(f"Teller {self.id} [Customer {self.current_customer.id}]: enter safe")
+                sleep_duration = random.randint(10, 50)
+                time.sleep(sleep_duration / 1000)
+                print(f"Teller {self.id} [Customer {self.current_customer.id}]: leaving safe")
+                safe_semaphore.release()
+                print(f"Teller {self.id} [Customer {self.current_customer.id}]: finishes {self.transaction_type} transaction.")
+                self.current_customer.finished_event.set()
+                print(f"Teller {self.id} [Customer {self.current_customer.id}]: wait for customer to leave")
+                self.customer_gone.wait()
 
             should_exit = False
             # Check completion AFTER transaction
@@ -94,7 +100,13 @@ class Teller(threading.Thread):
             self.current_customer = None
 
             if should_exit:
-                continue
+                return
+    def clear_events(self):
+        self.customer_assigned.clear()
+        self.transaction_complete.clear()
+        self.transaction_set.clear()
+        self.customer_gone.clear()
+        self.is_acknowledged.clear()
 
 class Customer(threading.Thread):
     def __init__(self, customer_id):
@@ -146,7 +158,13 @@ class Customer(threading.Thread):
         self.assigned_teller.customer_gone.set()
         print(f"Customer {self.id} []: goes to door")
         print(f"Customer {self.id} []: leaves the bank")
+
+        #clear all the events to be safe
+        self.clear_events()
+    def clear_events(self):
         self.assigned_teller.customer_gone.clear()
+        self.finished_event.clear()
+        self.ask_transaction.clear()
 
 
 # Main class to create the threads

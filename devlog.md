@@ -105,3 +105,8 @@ of those right now.
 I noticed that in my output, the teller would actually be ready to serve before the customer left the teller after the 
 first customer and realized that it was because I was never resetting the threading.Event() conditions so I'll go in and 
 fix all of those as well. 
+
+Since I was handling all customer transaction inside the with queue_condition, each customer transaction was being handled in 
+one go. Therefore, it wasn't properly simulating multiple tellers working at one time. Fixes for this included moving everything 
+out of the with statement while still making sure it was in the while loop since that shouldn't stop before 
+all the customers are handled. 
