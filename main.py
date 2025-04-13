@@ -26,6 +26,7 @@ class Teller(threading.Thread):
         self.transaction_complete = threading.Event()
         self.transaction_set = threading.Event()
         self.transaction_type = None
+        self.customer_gone = threading.Event()
 
     def run(self):
         global customers_served
@@ -69,21 +70,12 @@ class Teller(threading.Thread):
                     print(f"Teller {self.id} [Customer {self.current_customer.id}]: enter safe")
                     sleep_duration = random.randint(10, 50)
                     time.sleep(sleep_duration / 1000)
+                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: leaving safe")
                     safe_semaphore.release()
-
-
-
-
-
-
-
-
-
-            # Service the customer
-
-            print(f"Teller {self.id} [Customer {self.current_customer.id}]: Hello!")
-            time.sleep(random.uniform(0.5, 1.0))  # Transaction time
-            print(f"Teller {self.id} [Customer {self.current_customer.id}]: Transaction complete")
+                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: finishes withdrawal transaction")
+                    self.current_customer.finished_event.set()
+                    print(f"Teller {self.id} [Customer {self.current_customer.id}]: wait for customer to leave")
+                    self.customer_gone.wait()
 
             should_exit = False
             # Check completion AFTER transaction
@@ -137,6 +129,7 @@ class Customer(threading.Thread):
             queue_condition.notify_all()
 
         # wait for a teller to be assigned
+        print(f"Customer {self.id} []: selecting teller")
         self.assigned_event.wait()
         print(f"Customer {self.id} [Teller {self.assigned_teller.id}]: selects teller")
         print(f"Customer {self.id} [Teller {self.assigned_teller.id}]: introduces itself")
@@ -146,12 +139,9 @@ class Customer(threading.Thread):
         self.assigned_teller.transaction_set.set()
         print(f"Customer {self.id} [Teller {self.assigned_teller.id}]: asks for {self.transaction_type} transaction")
 
-        #wait for transaction to be completed
-        #self.finished_event.wait()
-
-
-
-
+        #wait for transaction to be completed and let the teller be free once customer is gone
+        self.finished_event.wait()
+        self.assigned_teller.customer_gone.set()
 
 #Main class to create the threads
 if __name__ == "__main__":
